@@ -13,7 +13,7 @@ logger = logging.getLogger("uvicorn")
 # step3-6 Loggerについて調べる
 logger.level = logging.DEBUG
 images = pathlib.Path(__file__).parent.resolve() / "images"
-db = pathlib.Path(__file__).parent.parent.resolve() / "db"
+db = pathlib.Path(__file__).parent.resolve() / "db"
 origins = [os.environ.get("FRONT_URL", "http://localhost:3000")]
 app.add_middleware(
     CORSMiddleware,

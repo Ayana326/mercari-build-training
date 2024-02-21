@@ -42,7 +42,8 @@ def get_items():
     # データベースの商品一覧を取得
     # return select_items()
 
-    # tableを削除してしまうので、1回しか実行しない！！！
+    # 元々あったitems table -> items table + categories table に分割する
+    # 分割時に実行済みなので、これ以上実行できない
     # split_tables()
 
     # 分割されたデータベースから商品の一覧を取得
@@ -58,7 +59,10 @@ async def add_item(name: str = Form(...), category: str = Form(...), image: Uplo
     add_item_to_json(new_item)
 
     # 新しい商品をデータベースに追加
-    insert_items(new_item)
+    # insert_items(new_item)
+
+    # 新しい商品を分割されたデータベースに追加
+    insert_forein_items(new_item)
     
     logger.info(f"Receive item: {name}, {category}, {image_filename}")
     return {"message": f"item received: {name}, {category}, {image_filename}"}
@@ -165,8 +169,7 @@ def search_items(keyword):
     return item_list
 
 # step4-3 カテゴリの情報を別のテーブルに移す
-# items table -> items table + categories table
-# 元のitems tableを削除してしまうので、1回しか実行しない！！！
+# 元々あったitems table -> items table + categories table
 def split_tables():
     conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
@@ -197,28 +200,58 @@ def split_tables():
 
     # new_items table の名前を items に変更
     cur.execute('''ALTER TABLE new_items RENAME TO items''')
-
-    # debug用
-    cur.execute('SELECT * from categories')
-    categories_list = cur.fetchall()
-    logger.info(categories_list)
-
-    # debug用
-    cur.execute('SELECT * from items')
-    items_list = cur.fetchall()
-    logger.info(items_list)
     
     conn.commit()
     conn.close()
 
 # step4-3 カテゴリの情報を別のテーブルに移す
+# categories table に挿入
+def insert_categories(category_name):
+    conn = sqlite3.connect(db/"items.db")
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
+    conn.commit()
+
+    return cur.lastrowid
+
+# step4-3 カテゴリの情報を別のテーブルに移す
+# items table に挿入
+def insert_forein_items(new_item):
+    conn = sqlite3.connect(db/"items.db")
+    cur = conn.cursor()
+
+    # category が存在しない場合は挿入する
+    cur.execute("SELECT id FROM categories WHERE name = ?", (new_item["category"],))
+    category_row = cur.fetchone()
+    if not category_row:
+        category_id = insert_categories(new_item["category"])
+    else:
+        category_id = category_row[0]
+
+    # 新しいアイテムを挿入する
+    data = [new_item["name"], category_id, new_item["image_name"]]
+    sql = 'INSERT INTO items (name, category_id, image_name) VALUES (?, ?, ?)'
+    cur.execute(sql, data)
+    conn.commit()
+
+    conn.close()
+
+# step4-3 カテゴリの情報を別のテーブルに移す
+# items table と categories table を内部結合してデータを取得する
 def select_join_items():
     conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     # SELECT (取得するカラム) FROM テーブル名1 INNER JOIN テーブル名2 ON (結合条件);
-    cur.execute("SELECT items.id, items.name, categories.name AS category, items.image_name FROM items INNER JOIN categories ON items.category_id = categories.id")
+    cur.execute('SELECT items.id, items.name, categories.name AS category, items.image_name FROM items INNER JOIN categories ON items.category_id = categories.id')
     items_list = cur.fetchall()
+
+    # debug用
+    cur.execute('SELECT * from items')
+    logger.info(cur.fetchall())
+    cur.execute('SELECT * from categories')
+    logger.info(cur.fetchall())
 
     conn.close()
 

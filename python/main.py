@@ -269,12 +269,6 @@ def select_join_items():
         }
         items_list.append(item_dict)
 
-    # debug用
-    # cur.execute('SELECT * from items')
-    # logger.info(cur.fetchall())
-    # cur.execute('SELECT * from categories')
-    # logger.info(cur.fetchall())
-
     conn.close()
 
-    return {"itmes": items_list}
+    return {"items": items_list}

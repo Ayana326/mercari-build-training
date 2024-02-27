@@ -221,6 +221,18 @@ def insert_forein_items(new_item):
     conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
+    # categories table の作成
+    cur.execute('''CREATE TABLE IF NOT EXISTS categories (
+                id INTEGER PRIMARY KEY,
+                name TEXT)''')
+    # items table の作成
+    cur.execute('''CREATE TABLE IF NOT EXISTS items (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                category_id INTEGER,
+                image_name TEXT,
+                FOREIGN KEY (category_id) REFERENCES categories (id))''')
+    
     # category が存在しない場合は挿入する
     cur.execute("SELECT id FROM categories WHERE name = ?", (new_item["category"],))
     category_row = cur.fetchone()
@@ -234,7 +246,7 @@ def insert_forein_items(new_item):
     sql = 'INSERT INTO items (name, category_id, image_name) VALUES (?, ?, ?)'
     cur.execute(sql, data)
     conn.commit()
-
+    
     conn.close()
 
 # step4-3 カテゴリの情報を別のテーブルに移す
@@ -245,14 +257,18 @@ def select_join_items():
 
     # SELECT (取得するカラム) FROM テーブル名1 INNER JOIN テーブル名2 ON (結合条件);
     cur.execute('SELECT items.id, items.name, categories.name AS category, items.image_name FROM items INNER JOIN categories ON items.category_id = categories.id')
-    items_list = cur.fetchall()
-
-    # debug用
-    cur.execute('SELECT * from items')
-    logger.info(cur.fetchall())
-    cur.execute('SELECT * from categories')
-    logger.info(cur.fetchall())
+    rows = cur.fetchall()
+    
+    items_list = []
+    for row in rows:
+        item_dict = {
+            "id": row[0],
+            "name": row[1],
+            "category": row[2],
+            "image_name": row[3]
+        }
+        items_list.append(item_dict)
 
     conn.close()
 
-    return items_list
+    return {"items": items_list}

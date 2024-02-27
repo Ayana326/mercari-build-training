@@ -246,7 +246,7 @@ def insert_forein_items(new_item):
     sql = 'INSERT INTO items (name, category_id, image_name) VALUES (?, ?, ?)'
     cur.execute(sql, data)
     conn.commit()
-
+    
     conn.close()
 
 # step4-3 カテゴリの情報を別のテーブルに移す

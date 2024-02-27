@@ -51,11 +51,11 @@ export const ItemList: React.FC<Prop> = (props) => {
         const imageUrl = server + `/image/${item.image_name}`
         return (
           <div key={item.id} className='ItemList'>
-            <img src={imageUrl} className='ItemImage'/>
+            <img src={imageUrl}/>
             <p>
-              <span>Name: {item.name}</span>
+              <span className='Name'>{item.name}</span>
               <br />
-              <span>Category: {item.category}</span>
+              <span className='Category'>{item.category}</span>
             </p>
           </div>
         )

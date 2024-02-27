@@ -111,6 +111,11 @@ def add_item_to_json(new_item):
     with open(file_path, "w") as file:
         json.dump({"items": items_list}, file)
 
+# 商品の削除
+@app.get("/delete/{item_id}")
+def get_item_id(item_id: int):
+    delete_item(item_id)
+
 # step3-4 画像を登録する
 async def store_image(image):
     image_bytes = await image.read()
@@ -272,3 +277,12 @@ def select_join_items():
     conn.close()
 
     return {"items": items_list}
+
+def delete_item(item_id):
+    conn = sqlite3.connect(db/"items.db")
+    cur = conn.cursor()
+
+    cur.execute('DELETE FROM items WHERE id = ?', (item_id,))
+    conn.commit()
+
+    conn.close()

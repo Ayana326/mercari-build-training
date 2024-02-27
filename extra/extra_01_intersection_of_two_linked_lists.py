@@ -4,7 +4,7 @@
 #         self.val = x
 #         self.next = None
 
-# 時間計算量 O(n^2)、空間計算量 O(n)
+# 時間計算量 O(n)、空間計算量 O(n)
 class Step1:
     def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> Optional[ListNode]:
         appeared = set()

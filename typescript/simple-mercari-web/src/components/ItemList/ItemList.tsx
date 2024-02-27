@@ -48,7 +48,7 @@ export const ItemList: React.FC<Prop> = (props) => {
   return (
     <div className='Container'>
       {items.map((item) => {
-        const imageUrl = `http://localhost:9000/image/${item.image_name}`
+        const imageUrl = server + `/image/${item.image_name}`
         return (
           <div key={item.id} className='ItemList'>
             <img src={imageUrl} className='ItemImage'/>

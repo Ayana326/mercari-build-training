@@ -112,7 +112,7 @@ def add_item_to_json(new_item):
         json.dump({"items": items_list}, file)
 
 # 商品の削除
-@app.get("/delete/{item_id}")
+@app.delete("/{item_id}")
 def get_item_id(item_id: int):
     delete_item(item_id)
 
@@ -250,8 +250,8 @@ def insert_forein_items(new_item):
     data = [new_item["name"], category_id, new_item["image_name"]]
     sql = 'INSERT INTO items (name, category_id, image_name) VALUES (?, ?, ?)'
     cur.execute(sql, data)
-    conn.commit()
 
+    conn.commit()
     conn.close()
 
 # step4-3 カテゴリの情報を別のテーブルに移す
@@ -273,16 +273,34 @@ def select_join_items():
             "image_name": row[3]
         }
         items_list.append(item_dict)
+    
+    # debug用
+    cur.execute('SELECT * FROM items')
+    logger.info(cur.fetchall())
+    cur.execute('SELECT * FROM categories')
+    logger.info(cur.fetchall())
 
     conn.close()
 
     return {"items": items_list}
 
+# item_idで指定されたitemを削除する
 def delete_item(item_id):
     conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
-    cur.execute('DELETE FROM items WHERE id = ?', (item_id,))
-    conn.commit()
+    # 削除対象のcategory_idを取得する
+    cur.execute('SELECT category_id FROM items WHERE id = ?', (item_id,))
+    category_id = cur.fetchone()[0]
 
+    # items tableからitemを削除する
+    cur.execute('DELETE FROM items WHERE id = ?', (item_id,))
+
+    # category_idを持つitemが他になければ、categories tableから対応するcategoryを削除する
+    cur.execute("SELECT COUNT(*) FROM items WHERE category_id = ?", (category_id,))
+    count = cur.fetchone()[0]
+    if count < 1:
+        cur.execute('DELETE FROM categories WHERE id = ?', (category_id,))
+    
+    conn.commit()
     conn.close()

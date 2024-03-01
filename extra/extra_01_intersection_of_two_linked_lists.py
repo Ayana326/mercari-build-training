@@ -16,3 +16,30 @@ class Step1:
                 return headB
             headB = headB.next
         return None
+
+# 時間計算量 O(n)、空間計算量 O(1)
+class Step2:
+    def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> Optional[ListNode]:
+        hA, hB = headA, headB
+        lenA, lenB = 0, 0
+        while hA:
+            lenA += 1
+            hA = hA.next
+        while hB:
+            lenB += 1
+            hB = hB.next
+        
+        diff = abs(lenA-lenB)
+        for i in range(diff):
+            if lenA > lenB:
+                headA = headA.next
+            else:
+                headB = headB.next
+
+        while headA or headB:
+            if headA == headB:
+                return headA
+            else:
+                headA = headA.next
+                headB = headB.next
+        return None

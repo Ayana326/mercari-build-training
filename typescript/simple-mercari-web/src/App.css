@@ -4,23 +4,45 @@
 
 .Title {
   background-color: rgb(142, 23, 40);
-  min-height: 8vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: left;
   font-size: calc(30px + 3vmin);
   color: #ffffff;
+  margin-top: -1em;
+  margin-bottom: -1em;
 }
 
 .Listing {
   background-color: rgb(142, 23, 40);
-  min-height: 8vh;
-  display: flex;
+  min-height: 20vh;
+  display: grid;
   flex-direction: column;
   align-items: center;
-  justify-content: left;
+  justify-content: center;
   font-size: calc(10px + 1vmin);
+  color: #ffffff;
+}
+
+.List {
+  display: grid;
+  grid-auto-flow: row;
+  row-gap: 10px;
+  width: 100%;
+  max-width: 800px;
+  height: 100%;
+}
+
+.List input[type='text'],
+.List input[type='file'],
+.List button {
+  border-radius: 5px; 
+  height: 90%;
+}
+
+.List button {
+  background-color: #000000;
   color: #ffffff;
 }
 
@@ -32,19 +54,27 @@
 }
 
 .ItemList {
-  background-color: #ffffff;
-  min-height: 8vh;
-  display: flex;
-  flex-direction: column;
+  background-color: #000000;
+  display: grid;
   align-items: center;
-  justify-content: left;
-  font-size: calc(10px + 1vmin);
-  color: rgb(142, 23, 40);
+  justify-items: center;
+  color: #ffffff;
+  border-radius: 5%;
 }
 
-.ItemImage {
-  width: 200px; 
-  height: 200px; 
+.ItemList img {
+  border-radius: 5%;
+  margin-top: 1em;
+  margin-bottom: -1.5em;
+  width: 80%;
+}
+
+.Name {
+  font-size: calc(30px + 2vmin);
+}
+
+.Category {
+  font-size: calc(10px + 1vmin);
 }
 
 .App-link {

@@ -111,6 +111,11 @@ def add_item_to_json(new_item):
     with open(file_path, "w") as file:
         json.dump({"items": items_list}, file)
 
+# 商品の削除
+@app.delete("/{item_id}")
+def get_item_id(item_id: int):
+    delete_item(item_id)
+
 # step3-4 画像を登録する
 async def store_image(image):
     image_bytes = await image.read()
@@ -245,8 +250,8 @@ def insert_forein_items(new_item):
     data = [new_item["name"], category_id, new_item["image_name"]]
     sql = 'INSERT INTO items (name, category_id, image_name) VALUES (?, ?, ?)'
     cur.execute(sql, data)
-    conn.commit()
 
+    conn.commit()
     conn.close()
 
 # step4-3 カテゴリの情報を別のテーブルに移す
@@ -268,7 +273,34 @@ def select_join_items():
             "image_name": row[3]
         }
         items_list.append(item_dict)
+    
+    # debug用
+    cur.execute('SELECT * FROM items')
+    logger.info(cur.fetchall())
+    cur.execute('SELECT * FROM categories')
+    logger.info(cur.fetchall())
 
     conn.close()
 
     return {"items": items_list}
+
+# item_idで指定されたitemを削除する
+def delete_item(item_id):
+    conn = sqlite3.connect(db/"items.db")
+    cur = conn.cursor()
+
+    # 削除対象のcategory_idを取得する
+    cur.execute('SELECT category_id FROM items WHERE id = ?', (item_id,))
+    category_id = cur.fetchone()[0]
+
+    # items tableからitemを削除する
+    cur.execute('DELETE FROM items WHERE id = ?', (item_id,))
+
+    # category_idを持つitemが他になければ、categories tableから対応するcategoryを削除する
+    cur.execute("SELECT COUNT(*) FROM items WHERE category_id = ?", (category_id,))
+    count = cur.fetchone()[0]
+    if count < 1:
+        cur.execute('DELETE FROM categories WHERE id = ?', (category_id,))
+    
+    conn.commit()
+    conn.close()

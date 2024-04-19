@@ -27,9 +27,9 @@ file_path = "items.json"
 
 @app.get("/")
 def root():
+    # debug用にデータベースへのパスと中身を表示
     conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
-    # debug用
     cur.execute('SELECT * FROM items')
     return {"message": "Hello, world!", "path": db/"items.db", "database": cur.fetchall()}
 

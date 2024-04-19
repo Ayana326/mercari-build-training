@@ -27,7 +27,7 @@ file_path = "items.json"
 
 @app.get("/")
 def root():
-    return {"message": "Hello, world!"}
+    return {"message": "Hello, world!", "path": db/"items.db"}
 
 # step3-3 商品一覧を取得する
 @app.get("/items")
@@ -63,7 +63,7 @@ async def add_item(name: str = Form(...), category: str = Form(...), image: Uplo
 
     # 新しい商品を分割されたデータベースに追加
     insert_forein_items(new_item)
-    
+
     logger.info(f"Receive item: {name}, {category}, {image_filename}")
     return {"message": f"item received: {name}, {category}, {image_filename}"}
 
@@ -131,8 +131,7 @@ async def store_image(image):
 
 # step4-1 SQLiteに情報を移項する
 def insert_items(new_item):
-    #conn = sqlite3.connect(db/"items.db")
-    conn = sqlite3.connect(os.path.join(db/"items.db"))
+    conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     # 存在しない場合は、新規作成
@@ -164,8 +163,7 @@ def select_items():
 
 # step4-2 商品を検索する
 def search_items(keyword):
-    #conn = sqlite3.connect(db/"items.db")
-    conn = sqlite3.connect(os.path.join(db/"items.db"))
+    conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     cur.execute("SELECT * FROM items WHERE name LIKE ?", ('%' + keyword + '%',))
@@ -214,8 +212,7 @@ def split_tables():
 # step4-3 カテゴリの情報を別のテーブルに移す
 # categories table に挿入
 def insert_categories(category_name):
-    #conn = sqlite3.connect(db/"items.db")
-    conn = sqlite3.connect(os.path.join(db/"items.db"))
+    conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     cur.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
@@ -226,8 +223,7 @@ def insert_categories(category_name):
 # step4-3 カテゴリの情報を別のテーブルに移す
 # items table に挿入
 def insert_forein_items(new_item):
-    #conn = sqlite3.connect(db/"items.db")
-    conn = sqlite3.connect(os.path.join(db/"items.db"))
+    conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     # categories table の作成
@@ -261,8 +257,7 @@ def insert_forein_items(new_item):
 # step4-3 カテゴリの情報を別のテーブルに移す
 # items table と categories table を内部結合してデータを取得する
 def select_join_items():
-    #conn = sqlite3.connect(db/"items.db")
-    conn = sqlite3.connect(os.path.join(db/"items.db"))
+    conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     # SELECT (取得するカラム) FROM テーブル名1 INNER JOIN テーブル名2 ON (結合条件);
@@ -291,8 +286,7 @@ def select_join_items():
 
 # item_idで指定されたitemを削除する
 def delete_item(item_id):
-    #conn = sqlite3.connect(db/"items.db")
-    conn = sqlite3.connect(os.path.join(db/"items.db"))
+    conn = sqlite3.connect(db/"items.db")
     cur = conn.cursor()
 
     # 削除対象のcategory_idを取得する

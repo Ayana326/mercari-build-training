@@ -27,7 +27,11 @@ file_path = "items.json"
 
 @app.get("/")
 def root():
-    return {"message": "Hello, world!"}
+    # debug用にデータベースへのパスと中身を表示
+    conn = sqlite3.connect(db/"items.db")
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM items')
+    return {"message": "Hello, world!", "path": db/"items.db", "database": cur.fetchall()}
 
 # step3-3 商品一覧を取得する
 @app.get("/items")
@@ -63,7 +67,7 @@ async def add_item(name: str = Form(...), category: str = Form(...), image: Uplo
 
     # 新しい商品を分割されたデータベースに追加
     insert_forein_items(new_item)
-    
+
     logger.info(f"Receive item: {name}, {category}, {image_filename}")
     return {"message": f"item received: {name}, {category}, {image_filename}"}
 

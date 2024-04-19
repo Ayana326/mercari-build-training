@@ -11,7 +11,7 @@ COPY . .
 
 EXPOSE 9000
 
-# step5-5 ockerfileを変更する
+# step5-5 dockerfileを変更する
 # CMD [ "python3", "-V"]
 
 # step5-6 出品APIをdocker上で動かす

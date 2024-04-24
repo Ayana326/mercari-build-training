@@ -74,14 +74,11 @@ async def add_item(name: str = Form(...), category: str = Form(...), image: Uplo
 # step3-5 商品の詳細を返す
 @app.get("/items/{item_id}")
 def get_item_id(item_id: int):
-    with open(file_path, "r") as file:
-        items_data = json.load(file)
+    # JSON fileにある商品の詳細を返す
+    # return select_JSON_item_by_id(item_id)
 
-    if item_id < 1 or item_id > len(items_data['items'])+1:
-        raise HTTPException(status_code=400, detail="item id is not a valid number")
-    
-    logger.info(f"Receive item: {items_data['items'][item_id-1]}")
-    return items_data["items"][item_id-1]
+    # データベースにある商品の詳細を返す
+    return select_item_by_id(item_id)
 
 @app.get("/image/{image_name}")
 async def get_image(image_name):
@@ -101,6 +98,11 @@ async def get_image(image_name):
 def get_search_items(keyword: str = Query(...)):
     return search_items(keyword)
 
+# 商品の削除
+@app.delete("/{item_id}")
+def get_item_id(item_id: int):
+    delete_item(item_id)
+
 # step3-2 新しい商品を登録する
 def add_item_to_json(new_item):
     # ファイルの読み込み 
@@ -115,11 +117,6 @@ def add_item_to_json(new_item):
     with open(file_path, "w") as file:
         json.dump({"items": items_list}, file)
 
-# 商品の削除
-@app.delete("/{item_id}")
-def get_item_id(item_id: int):
-    delete_item(item_id)
-
 # step3-4 画像を登録する
 async def store_image(image):
     image_bytes = await image.read()
@@ -132,6 +129,37 @@ async def store_image(image):
 
     logger.info(f"Receive name: {image_filename}")
     return image_filename
+
+# step3-5 (JSON fileにある)商品の詳細を返す
+def select_JSON_item_by_id(item_id):
+    with open(file_path, "r") as file:
+        items_data = json.load(file)
+
+    if item_id < 1 or item_id > len(items_data['items'])+1:
+        raise HTTPException(status_code=400, detail="item id is not a valid number")
+    
+    logger.info(f"Receive item: {items_data['items'][item_id-1]}")
+    return items_data["items"][item_id-1]
+
+# step3-5 （データベースにある）商品の詳細を返す
+def select_item_by_id(item_id):
+    conn = sqlite3.connect(db/"items.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT COUNT(*) FROM items")
+    count = cur.fetchone()[0]
+
+    if item_id < 1 or item_id > count:
+        raise HTTPException(status_code=400, detail="item id is not a valid number")
+
+    # SELECT (取得するカラム) FROM テーブル名1 INNER JOIN テーブル名2 ON (結合条件);
+    cur.execute('SELECT items.id, items.name, categories.name AS category, items.image_name FROM items INNER JOIN categories ON items.category_id = categories.id WHERE items.id = ?', (item_id,))
+    item = cur.fetchone()
+
+    conn.close()
+
+    logger.info(f"Receive item: {item}")
+    return {"name": item[1], "category": item[2], "image_name": item[3]}
 
 # step4-1 SQLiteに情報を移項する
 def insert_items(new_item):
@@ -267,7 +295,7 @@ def select_join_items():
     # SELECT (取得するカラム) FROM テーブル名1 INNER JOIN テーブル名2 ON (結合条件);
     cur.execute('SELECT items.id, items.name, categories.name AS category, items.image_name FROM items INNER JOIN categories ON items.category_id = categories.id')
     rows = cur.fetchall()
-    
+
     items_list = []
     for row in rows:
         item_dict = {
@@ -277,7 +305,7 @@ def select_join_items():
             "image_name": row[3]
         }
         items_list.append(item_dict)
-    
+
     # debug用
     cur.execute('SELECT * FROM items')
     logger.info(cur.fetchall())
